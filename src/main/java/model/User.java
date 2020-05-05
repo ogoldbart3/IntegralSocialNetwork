@@ -21,7 +21,7 @@ public class User {
         this.name = name;
     }
 
-    public List<User> getFollowing() {
+    private List<User> getFollowing() {
         return following;
     }
 
@@ -42,6 +42,9 @@ public class User {
             yells = new ArrayList<>();
         }
 
+//        note: passing around username as id, but in prod, these would be
+//         ids and all functional calls would involve DB lookups
+
         if (yellText != null && !yellText.isEmpty()) {
             yells.add(new Yell(name, yellText));
         }
@@ -50,7 +53,8 @@ public class User {
     public List<Yell> getPersonalTimeline() {
         List<Yell> timeline = getYells();
         if (timeline != null) {
-            Collections.sort(timeline);
+            // default sorting would be ascending, we need descending
+            timeline.sort(Collections.reverseOrder());
         }
         return timeline;
     }
@@ -70,12 +74,31 @@ public class User {
 
         List<Yell> collectedTimeline = new ArrayList<>();
 
+        // adding user's followed's posts
         for (User followed : following) {
             collectedTimeline.addAll(followed.getPersonalTimeline());
         }
 
-        Collections.sort(collectedTimeline);
+        // adding user's personal posts
+        if (yells != null) {
+            collectedTimeline.addAll(yells);
+        }
+
+        // collective final sort
+        collectedTimeline.sort(Collections.reverseOrder());
 
         return collectedTimeline;
+    }
+
+    public void follow(User user) {
+        if (user == null) {
+            return;
+        }
+
+        if (following == null) {
+            following = new ArrayList<>();
+        }
+
+        following.add(user);
     }
 }
